@@ -1,25 +1,24 @@
-[project]
-name = "homework"
-version = "0.1.0"
-description = ""
-authors = [
-    {name = "Your Name",email = "you@example.com"}
-]
+[tool.poetry]
+name = "homework2"
+version = "0.1.1"
+description = "A small project"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "pytest-cov (>=6.1.1,<7.0.0)",
-    "requests (>=2.32.4,<3.0.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "dotenv (>=0.9.9,<0.10.0)",
-    "pandas (>=2.3.0,<3.0.0)",
-    "openpyxl (>=3.1.5,<4.0.0)"
-]
+authors = ["Markus <markus.rulit@gmail.com>"]
 
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.dependencies]
+python = "^3.13"
+pytest-cov = ">=6.1.1,<7.0.0"
+requests = ">=2.32.4,<3.0.0"
+python-dotenv = ">=1.1.1,<2.0.0"
+"dotenv" = ">=0.9.9,<0.10.0"
+pandas = ">=2.3.0,<3.0.0"
+openpyxl = ">=3.1.5,<4.0.0"
+poetry-core = ">=2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-cov = "^6.1.1"
 
 [tool.poetry.group.lint.dependencies]
 flake8 = "^7.2.0"
@@ -27,10 +26,10 @@ mypy = "^1.15.0"
 black = "^25.1.0"
 isort = "^6.0.1"
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.4.0"
-pytest-cov = "^6.1.1"
 
 [tool.mypy]
 disallow_untyped_defs = true
