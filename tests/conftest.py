@@ -1,5 +1,8 @@
-import pytest
 import json
+
+import pytest
+
+from src.main import Category, Product
 
 
 @pytest.fixture
@@ -47,3 +50,22 @@ def invalid_json_file(tmp_path):  # type: ignore[no-untyped-def]
         f.write("invalid json")
 
     return file_path
+
+
+@pytest.fixture
+def sample_product() -> Product:
+    """
+    Фикстура для создания экземпляра класса Product.
+    """
+    return Product("iPhone 15", "512GB, Gray space", 210000.0, 8)
+
+
+@pytest.fixture
+def sample_category(sample_product) -> Category:  # type: ignore[no-untyped-def]
+    """
+    Фикстура для создания экземпляра класса Category.
+    Использует фикстуру sample_product для добавления продукта в категорию.
+    """
+    category = Category("Смартфоны", "Смартфоны для удобства жизни", [])
+    category.add_product(sample_product)
+    return category

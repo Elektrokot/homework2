@@ -1,7 +1,7 @@
 import pytest
 
-from src.main import Product, Category
-from src.utils import read_json, create_objects_from_json
+from src.main import Category, Product
+from src.utils import create_objects_from_json, read_json
 
 
 # Тесты для функции read_json
@@ -47,11 +47,11 @@ def test_create_objects_from_json(valid_json_file):  # type: ignore[no-untyped-d
     category1 = categories[0]
     assert category1.name == "Смартфоны"
     assert category1.description == "Смартфоны для удобства жизни"
-    assert len(category1.products) == 2
-    assert all(isinstance(product, Product) for product in category1.products)
+    assert len(category1.get_products()) == 2  # Используем метод get_products
+    assert all(isinstance(product, Product) for product in category1.get_products())
 
     # Проверяем второй продукт первой категории
-    product2 = category1.products[1]
+    product2 = category1.get_products()[1]  # Используем метод get_products
     assert product2.name == "iPhone 15"
     assert product2.price == 210000.0
     assert product2.quantity == 8
@@ -59,14 +59,14 @@ def test_create_objects_from_json(valid_json_file):  # type: ignore[no-untyped-d
     # Проверяем вторую категорию
     category2 = categories[1]
     assert category2.name == "Телевизоры"
-    assert len(category2.products) == 1
-    assert category2.products[0].name == '55" QLED 4K'
+    assert len(category2.get_products()) == 1  # Используем метод get_products
+    assert category2.get_products()[0].name == '55" QLED 4K'
 
 
 def test_create_objects_from_empty_json() -> None:
     """
     Проверяет обработку пустого JSON.
     """
-    data:list = []
+    data: list = []
     categories = create_objects_from_json(data)
     assert len(categories) == 0
