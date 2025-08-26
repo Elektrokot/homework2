@@ -1,7 +1,7 @@
 import json
 import os
 
-from src.main import Product, Category
+from src.main import Category, Product
 
 
 def read_json(path: str) -> list:
@@ -44,7 +44,7 @@ def create_objects_from_json(data: list) -> list[Category]:
     return categories
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
 
     data: list = read_json("../data/products.json")
 
@@ -54,6 +54,6 @@ if __name__ == "__main__":
         print(f"Категория: {category.name}")
         print(f"Описание: {category.description}")
         print("Товары:")
-        for product in category.products:
+        for product in category.get_products():
             print(f"  - {product.name}, Цена: {product.price}, Количество: {product.quantity}")
         print()
