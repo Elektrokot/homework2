@@ -61,6 +61,30 @@ def sample_product() -> Product:
 
 
 @pytest.fixture
+def sample_product_2() -> Product:
+    """
+    Фикстура для создания экземпляра класса Product.
+    """
+    return Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+
+
+@pytest.fixture
+def sample_product_3() -> Product:
+    """
+    Фикстура для создания экземпляра класса Product.
+    """
+    return Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+
+
+@pytest.fixture
+def sample_product_4() -> Product:
+    """
+    Фикстура для создания экземпляра класса Product.
+    """
+    return Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
+
+
+@pytest.fixture
 def sample_category(sample_product) -> Category:  # type: ignore[no-untyped-def]
     """
     Фикстура для создания экземпляра класса Category.
