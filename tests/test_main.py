@@ -222,7 +222,7 @@ def test_new_product_creation():  # type: ignore[no-untyped-def]
     product = Product.new_product(product_data)
     assert product.name == "Samsung Galaxy S23 Ultra"
     assert product.price == 180000.0
-    assert product.quantity == 10
+    assert product.quantity == 5
 
 
 def test_new_product_update(sample_product):  # type: ignore[no-untyped-def]
@@ -231,7 +231,7 @@ def test_new_product_update(sample_product):  # type: ignore[no-untyped-def]
     """
     product_data = {"name": "iPhone 15", "description": "512GB, Gray space", "price": 200000.0, "quantity": 3}
     Product.new_product(product_data)
-    assert sample_product.quantity == 8  # Количество должно сложиться
+    assert sample_product.quantity == 11  # Количество должно сложиться
     assert sample_product.price == 210000.0  # Выбирается максимальная цена
 
 
@@ -250,3 +250,46 @@ def test_products_property(sample_category, sample_product):  # type: ignore[no-
     """
     expected_output = "iPhone 15, 210000.0 руб. Остаток: 8 шт."
     assert sample_category.products == expected_output
+
+
+# Тесты для метода __add__
+def test_smartphone_addition(smartphone1, smartphone2):  # type: ignore[no-untyped-def]
+    """
+    Проверяет сложение двух смартфонов.
+    """
+    total_cost = smartphone1 + smartphone2
+    assert total_cost == 180000.0 * 5 + 210000.0 * 8
+
+
+def test_lawn_grass_addition(grass1, grass2):  # type: ignore[no-untyped-def]
+    """
+    Проверяет сложение двух газонных трав.
+    """
+    total_cost = grass1 + grass2
+    assert total_cost == 500.0 * 20 + 450.0 * 15
+
+
+def test_invalid_addition(smartphone1, grass1):  # type: ignore[no-untyped-def]
+    """
+    Проверяет, что сложение объектов разных классов вызывает TypeError.
+    """
+    with pytest.raises(TypeError, match="Нельзя складывать объекты разных типов."):
+        smartphone1 + grass1
+
+
+# Тесты для метода add_product
+def test_add_valid_product(smartphone1, sample_category_2):  # type: ignore[no-untyped-def]
+    """
+    Проверяет добавление корректного продукта в категорию.
+    """
+    sample_category_2.add_product(smartphone1)
+    assert len(sample_category_2.get_products()) == 1
+
+
+def test_add_invalid_product(sample_category_2):  # type: ignore[no-untyped-def]
+    """
+    Проверяет, что добавление некорректного объекта вызывает TypeError.
+    """
+    invalid_object = "Not a product"
+    with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников."):
+        sample_category_2.add_product(invalid_object)  # type: ignore[no-untyped-def]
