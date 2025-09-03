@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from src.main import Category, Product
+from src.main import Category, LawnGrass, Product, Smartphone
 
 
 @pytest.fixture
@@ -57,6 +57,7 @@ def sample_product() -> Product:
     """
     Фикстура для создания экземпляра класса Product.
     """
+    Product.all_products = list()
     return Product("iPhone 15", "512GB, Gray space", 210000.0, 8)
 
 
@@ -65,6 +66,7 @@ def sample_product_2() -> Product:
     """
     Фикстура для создания экземпляра класса Product.
     """
+    Product.all_products = list()
     return Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
 
 
@@ -73,6 +75,7 @@ def sample_product_3() -> Product:
     """
     Фикстура для создания экземпляра класса Product.
     """
+    Product.all_products = list()
     return Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
 
 
@@ -81,6 +84,7 @@ def sample_product_4() -> Product:
     """
     Фикстура для создания экземпляра класса Product.
     """
+    Product.all_products = list()
     return Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
 
 
@@ -90,6 +94,55 @@ def sample_category(sample_product) -> Category:  # type: ignore[no-untyped-def]
     Фикстура для создания экземпляра класса Category.
     Использует фикстуру sample_product для добавления продукта в категорию.
     """
+    Category.category_count = 0
     category = Category("Смартфоны", "Смартфоны для удобства жизни", [])
     category.add_product(sample_product)
     return category
+
+
+@pytest.fixture
+def sample_category_2() -> Category:  # type: ignore[no-untyped-def]
+    """
+    Фикстура для создания экземпляра класса Category.
+    """
+    Category.category_count = 0
+    category = Category("Смартфоны", "Смартфоны для удобства жизни", [])
+    return category
+
+
+@pytest.fixture
+def smartphone1() -> Smartphone:
+    """
+    Фикстура для создания экземпляра класса Smartphone.
+    """
+    Product.all_products = list()
+    return Smartphone(
+        "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5, 95.5, "S23 Ultra", 256, "Серый"
+    )
+
+
+@pytest.fixture
+def smartphone2() -> Smartphone:
+    """
+    Фикстура для создания экземпляра класса Smartphone.
+    """
+    Product.all_products = list()
+    return Smartphone("Iphone 15", "512GB, Gray space", 210000.0, 8, 98.2, "15", 512, "Gray space")
+
+
+@pytest.fixture
+def grass1() -> LawnGrass:
+    """
+    Фикстура для создания экземпляра класса LawnGrass.
+    """
+    Product.all_products = list()
+    return LawnGrass("Газонная трава", "Элитная трава для газона", 500.0, 20, "Россия", "7 дней", "Зеленый")
+
+
+@pytest.fixture
+def grass2() -> LawnGrass:
+    """
+    Фикстура для создания экземпляра класса LawnGrass.
+    """
+    Product.all_products = list()
+    return LawnGrass("Газонная трава 2", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
