@@ -293,3 +293,27 @@ def test_add_invalid_product(sample_category_2):  # type: ignore[no-untyped-def]
     invalid_object = "Not a product"
     with pytest.raises(TypeError, match="Можно добавлять только объекты класса Product или его наследников."):
         sample_category_2.add_product(invalid_object)  # type: ignore[no-untyped-def]
+
+
+def test_order_creation(sample_order):  # type: ignore[no-untyped-def]
+    """
+    Проверяет корректность создания заказа.
+    """
+    assert sample_order.product.name == "iPhone 15"
+    assert sample_order.quantity == 2
+    assert sample_order.total_cost() == 210000.0 * 2
+
+
+def test_order_total_cost(sample_order):  # type: ignore[no-untyped-def]
+    """
+    Проверяет метод total_cost для заказа.
+    """
+    assert sample_order.total_cost() == 210000.0 * 2
+
+
+def test_order_str_representation(sample_order):  # type: ignore[no-untyped-def]
+    """
+    Проверяет строковое представление заказа.
+    """
+    expected_output = "Товар: iPhone 15, количество: 2, итоговая стоимость: 420000.0 руб."
+    assert str(sample_order) == expected_output

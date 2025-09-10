@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from src.main import Category, LawnGrass, Product, Smartphone
+from src.main import Category, LawnGrass, Order, Product, Smartphone
 
 
 @pytest.fixture
@@ -146,3 +146,11 @@ def grass2() -> LawnGrass:
     """
     Product.all_products = list()
     return LawnGrass("Газонная трава 2", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
+
+
+@pytest.fixture
+def sample_order(sample_product) -> Order:  # type: ignore[no-untyped-def]
+    """
+    Фикстура для создания экземпляра класса Order.
+    """
+    return Order(sample_product, 2)
