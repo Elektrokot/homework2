@@ -317,3 +317,28 @@ def test_order_str_representation(sample_order):  # type: ignore[no-untyped-def]
     """
     expected_output = "Товар: iPhone 15, количество: 2, итоговая стоимость: 420000.0 руб."
     assert str(sample_order) == expected_output
+
+
+def test_product_creation_with_zero_quantity():  # type: ignore[no-untyped-def]
+    """
+    Проверяет, что при создании продукта с нулевым количеством выбрасывается ValueError.
+    """
+    with pytest.raises(ValueError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product("Тестовый товар", "Описание", 1000.0, 0)
+
+
+def test_category_middle_price_with_products(sample_product, sample_product_2):  # type: ignore[no-untyped-def]
+    """
+    Проверяет корректность вычисления средней цены товаров в категории.
+    """
+    category = Category("Смартфоны", "Смартфоны для удобства жизни", [sample_product, sample_product_2])
+    expected_average = (sample_product.price + sample_product_2.price) / 2
+    assert category.middle_price() == expected_average
+
+
+def test_category_middle_price_empty():  # type: ignore[no-untyped-def]
+    """
+    Проверяет, что при отсутствии товаров в категории метод middle_price возвращает 0.
+    """
+    category = Category("Пустая категория", "Категория без продуктов", [])
+    assert category.middle_price() == 0.0

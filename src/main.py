@@ -2,6 +2,29 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict
 
 
+class ProductQuantityException(Exception):
+    """
+    Исключение, вызываемое при попытке добавить товар с нулевым количеством.
+    """
+
+    def __init__(self, message: str = "Товар с нулевым количеством не может быть добавлен"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class Orderable(ABC):
+    """
+    Абстрактный класс для заказов.
+    """
+
+    @abstractmethod
+    def total_cost(self) -> float:
+        """
+        Возвращает итоговую стоимость.
+        """
+        pass
+
+
 class BaseProduct(ABC):
     """
     Абстрактный базовый класс для всех продуктов.
@@ -53,7 +76,7 @@ class BaseProduct(ABC):
         pass
 
 
-class LoggerMixin(BaseProduct, ABC):
+class LoggerMixin:
     """
     Миксин для логирования создания объекта.
     """
@@ -62,6 +85,10 @@ class LoggerMixin(BaseProduct, ABC):
         """
         Логирует создание объекта с указанием класса и параметров.
         """
+        self.quantity = None
+        self.price = None
+        self.name = None
+        self.description = None
         print(f"{self.__class__.__name__}{args}")
         super().__init__(*args)
 
@@ -72,7 +99,7 @@ class LoggerMixin(BaseProduct, ABC):
         return f"{self.__class__.__name__}({self.name}, {self.description}, {self.price}, {self.quantity})"
 
 
-class Product(LoggerMixin, BaseProduct):
+class Product(BaseProduct, LoggerMixin):
     """
     Базовый класс для продуктов с миксином логирования.
     """
@@ -80,6 +107,8 @@ class Product(LoggerMixin, BaseProduct):
     all_products: list["Product"] = []  # Статический атрибут для хранения всех продуктов
 
     def __init__(self, name: str, description: str, price: float, quantity: int) -> None:
+        if quantity <= 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         super().__init__(name, description, price, quantity)
         Product.all_products.append(self)  # Добавляем продукт в общий список
 
@@ -196,19 +225,6 @@ class LawnGrass(Product):
         self.color = color
 
 
-class Orderable(ABC):
-    """
-    Абстрактный класс для заказов.
-    """
-
-    @abstractmethod
-    def total_cost(self) -> float:
-        """
-        Возвращает итоговую стоимость.
-        """
-        pass
-
-
 class Order(Orderable):
     """
     Класс для заказов.
@@ -217,6 +233,20 @@ class Order(Orderable):
     def __init__(self, product: BaseProduct, quantity: int):
         self.product = product
         self.quantity = quantity
+        self._process_addition()
+
+    def _process_addition(self) -> None:
+        """
+        Обработка добавления товара в заказ с проверкой количества.
+        """
+        try:
+            if self.quantity <= 0:
+                raise ProductQuantityException()
+            print("Товар добавлен в заказ")
+        except ProductQuantityException as e:
+            print(e.message)
+        finally:
+            print("Обработка добавления товара завершена")
 
     def total_cost(self) -> float:
         return self.product.price * self.quantity
@@ -225,7 +255,7 @@ class Order(Orderable):
         return f"Товар: {self.product.name}, количество: {self.quantity}, итоговая стоимость: {self.total_cost()} руб."
 
 
-class Category:
+class Category(Orderable):
     """
     Класс Категории товаров.
     """
@@ -250,8 +280,20 @@ class Category:
         """
         if not isinstance(product, Product):
             raise TypeError("Можно добавлять только объекты класса Product или его наследников.")
-        self.__products.append(product)
-        Category.product_count += 1
+
+        try:
+            if product.quantity <= 0:
+                raise ProductQuantityException()
+            self.__products.append(product)
+            Category.product_count += 1
+            print("Товар добавлен в категорию")
+        except ProductQuantityException as e:
+            print(e.message)
+        else:
+            # Выполняется только если не было исключений
+            pass
+        finally:
+            print("Обработка добавления товара завершена")
 
     @property
     def products(self) -> str:
@@ -269,6 +311,25 @@ class Category:
         Метод для получения списка продуктов категории.
         """
         return self.__products
+
+    def total_cost(self) -> float:
+        """
+        Возвращает общую стоимость всех товаров в категории.
+        """
+        total_cost = sum(product.price * product.quantity for product in self.__products)
+        return total_cost
+
+    def middle_price(self) -> float:
+        """
+        Метод для вычисления средней цены товаров в категории.
+        В случае отсутствия товаров возвращает 0.
+        """
+        try:
+            total_price = sum(product.price for product in self.__products)
+            count = len(self.__products)
+            return total_price / count
+        except ZeroDivisionError:
+            return 0.0
 
     def __str__(self) -> str:
         """
@@ -317,134 +378,163 @@ class CategoryIterator:
 
 
 if __name__ == "__main__":  # pragma: no cover
+    try:
+        product_invalid = Product("Бракованный товар", "Неверное количество", 1000.0, 0)
+    except ValueError as e:
+        print(
+            "Возникла ошибка ValueError прерывающая работу программы при попытке добавить продукт с нулевым количеством"
+        )
+    else:
+        print("Не возникла ошибка ValueError при попытке добавить продукт с нулевым количеством")
+
     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
 
-    print(product1.name)
-    print(product1.description)
-    print(product1.price)
-    print(product1.quantity)
+    category1 = Category("Смартфоны", "Категория смартфонов", [product1, product2, product3])
 
-    print(product2.name)
-    print(product2.description)
-    print(product2.price)
-    print(product2.quantity)
+    print(category1.middle_price())
 
-    print(product3.name)
-    print(product3.description)
-    print(product3.price)
-    print(product3.quantity)
+    category_empty = Category("Пустая категория", "Категория без продуктов", [])
+    print(category_empty.middle_price())
 
-    category1 = Category(
-        "Смартфоны",
-        "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
-        [product1, product2, product3],
-    )
+    # # Проверка добавления товара в категорию
+    # product4 = Product("Телефон", "Смартфон", 50000.0, 10)
+    # category1.add_product(product4)
+    # # Вывод информации
+    # print(f"\nКоличество продуктов в категории: {len(category1.get_products())}")
+    # print(f"Общая стоимость товаров в категории: {category1.total_cost()}")
+    # print(f"Средняя цена товаров в категории: {category1.middle_price()}")
 
-    print(category1.name == "Смартфоны")
-    print(category1.description)
-    print(len(category1.products))
-    print(category1.category_count)
-    print(category1.product_count)
-
-    product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
-    category2 = Category(
-        "Телевизоры",
-        "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
-        [product4],
-    )
-
-    print(category2.name)
-    print(category2.description)
-    print(len(category2.products))
-    print(category2.products)
-
-    print(Category.category_count)
-    print(Category.product_count)
-
-    order = Order(product2, 2)
-    print(order)
+# if __name__ == "__main__":  # pragma: no cover
+#     product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5)
+#     product2 = Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
+#     product3 = Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
+#
+#     print(product1.name)
+#     print(product1.description)
+#     print(product1.price)
+#     print(product1.quantity)
+#
+#     print(product2.name)
+#     print(product2.description)
+#     print(product2.price)
+#     print(product2.quantity)
+#
+#     print(product3.name)
+#     print(product3.description)
+#     print(product3.price)
+#     print(product3.quantity)
+#
+#     category1 = Category(
+#         "Смартфоны",
+#         "Смартфоны, как средство не только коммуникации, но и получения дополнительных функций для удобства жизни",
+#         [product1, product2, product3],
+#     )
+#
+#     print(category1.name == "Смартфоны")
+#     print(category1.description)
+#     print(len(category1.products))
+#     print(category1.category_count)
+#     print(category1.product_count)
+#
+#     product4 = Product('55" QLED 4K', "Фоновая подсветка", 123000.0, 7)
+#     category2 = Category(
+#         "Телевизоры",
+#         "Современный телевизор, который позволяет наслаждаться просмотром, станет вашим другом и помощником",
+#         [product4],
+#     )
+#
+#     print(category2.name)
+#     print(category2.description)
+#     print(len(category2.products))
+#     print(category2.products)
+#
+#     print(Category.category_count)
+#     print(Category.product_count)
+#
+#     order = Order(product2, 2)
+#     print(order)
 
 
 # if __name__ == "__main__":  # pragma: no cover
-# smartphone1 = Smartphone(
-#     "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5, 95.5, "S23 Ultra", 256, "Серый"
-# )
-# smartphone2 = Smartphone("Iphone 15", "512GB, Gray space", 210000.0, 8, 98.2, "15", 512, "Gray space")
-# smartphone3 = Smartphone("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14, 90.3, "Note 11", 1024, "Синий")
+#     smartphone1 = Smartphone(
+#         "Samsung Galaxy S23 Ultra", "256GB, Серый цвет, 200MP камера", 180000.0, 5, 95.5, "S23 Ultra", 256, "Серый"
+#     )
+#     smartphone2 = Smartphone("Iphone 15", "512GB, Gray space", 210000.0, 8, 98.2, "15", 512, "Gray space")
+#     smartphone3 = Smartphone("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14, 90.3, "Note 11", 1024, "Синий")
 #
-# print(smartphone1.name)
-# print(smartphone1.description)
-# print(smartphone1.price)
-# print(smartphone1.quantity)
-# print(smartphone1.efficiency)
-# print(smartphone1.model)
-# print(smartphone1.memory)
-# print(smartphone1.color)
+#     print(smartphone1.name)
+#     print(smartphone1.description)
+#     print(smartphone1.price)
+#     print(smartphone1.quantity)
+#     print(smartphone1.efficiency)
+#     print(smartphone1.model)
+#     print(smartphone1.memory)
+#     print(smartphone1.color)
 #
-# print(smartphone2.name)
-# print(smartphone2.description)
-# print(smartphone2.price)
-# print(smartphone2.quantity)
-# print(smartphone2.efficiency)
-# print(smartphone2.model)
-# print(smartphone2.memory)
-# print(smartphone2.color)
+#     print(smartphone2.name)
+#     print(smartphone2.description)
+#     print(smartphone2.price)
+#     print(smartphone2.quantity)
+#     print(smartphone2.efficiency)
+#     print(smartphone2.model)
+#     print(smartphone2.memory)
+#     print(smartphone2.color)
 #
-# print(smartphone3.name)
-# print(smartphone3.description)
-# print(smartphone3.price)
-# print(smartphone3.quantity)
-# print(smartphone3.efficiency)
-# print(smartphone3.model)
-# print(smartphone3.memory)
-# print(smartphone3.color)
+#     print(smartphone3.name)
+#     print(smartphone3.description)
+#     print(smartphone3.price)
+#     print(smartphone3.quantity)
+#     print(smartphone3.efficiency)
+#     print(smartphone3.model)
+#     print(smartphone3.memory)
+#     print(smartphone3.color)
 #
-# grass1 = LawnGrass("Газонная трава", "Элитная трава для газона", 500.0, 20, "Россия", "7 дней", "Зеленый")
-# grass2 = LawnGrass("Газонная трава 2", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
+#     grass1 = LawnGrass("Газонная трава", "Элитная трава для газона", 500.0, 20, "Россия", "7 дней", "Зеленый")
+#     grass2 = LawnGrass("Газонная трава 2", "Выносливая трава", 450.0, 15, "США", "5 дней", "Темно-зеленый")
 #
-# print(grass1.name)
-# print(grass1.description)
-# print(grass1.price)
-# print(grass1.quantity)
-# print(grass1.country)
-# print(grass1.germination_period)
-# print(grass1.color)
+#     print(grass1.name)
+#     print(grass1.description)
+#     print(grass1.price)
+#     print(grass1.quantity)
+#     print(grass1.country)
+#     print(grass1.germination_period)
+#     print(grass1.color)
 #
-# print(grass2.name)
-# print(grass2.description)
-# print(grass2.price)
-# print(grass2.quantity)
-# print(grass2.country)
-# print(grass2.germination_period)
-# print(grass2.color)
+#     print(grass2.name)
+#     print(grass2.description)
+#     print(grass2.price)
+#     print(grass2.quantity)
+#     print(grass2.country)
+#     print(grass2.germination_period)
+#     print(grass2.color)
 #
-# smartphone_sum = smartphone1 + smartphone2
-# print(smartphone_sum)
+#     smartphone_sum = smartphone1 + smartphone2
+#     print(smartphone_sum)
 #
-# grass_sum = grass1 + grass2
-# print(grass_sum)
+#     grass_sum = grass1 + grass2
+#     print(grass_sum)
 #
-# try:
-#     invalid_sum = smartphone1 + grass1
-# except TypeError:
-#     print("Возникла ошибка TypeError при попытке сложения")
-# else:
-#     print("Не возникла ошибка TypeError при попытке сложения")
+#     try:
+#         invalid_sum = smartphone1 + grass1
+#     except TypeError:
+#         print("Возникла ошибка TypeError при попытке сложения")
+#     else:
+#         print("Не возникла ошибка TypeError при попытке сложения")
 #
-# category_smartphones = Category("Смартфоны", "Высокотехнологичные смартфоны", [smartphone1, smartphone2])
-# category_grass = Category("Газонная трава", "Различные виды газонной травы", [grass1, grass2])
+#     category_smartphones = Category("Смартфоны", "Высокотехнологичные смартфоны", [smartphone1, smartphone2])
+#     category_grass = Category("Газонная трава", "Различные виды газонной травы", [grass1, grass2])
 #
-# category_smartphones.add_product(smartphone3)
+#     category_smartphones.add_product(smartphone3)
 #
-# print(category_smartphones.products)
+#     print(category_smartphones.products)
 #
-# print(Category.product_count)
+#     print(Category.product_count)
 #
-# try:
-#     category_smartphones.add_product("Not a product")  # arg-type: ignore[no-untyped-def]
-# except TypeError:
-#     print("Возникла ошибка TypeError при добавлении не продукта")
-# else:
-#     print("Не возникла ошибка TypeError при добавлении не продукта")
+#     try:
+#         category_smartphones.add_product("Not a product")  # arg-type: ignore[no-untyped-def]
+#     except TypeError:
+#         print("Возникла ошибка TypeError при добавлении не продукта")
+#     else:
+#         print("Не возникла ошибка TypeError при добавлении не продукта")
