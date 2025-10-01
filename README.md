@@ -152,16 +152,20 @@
 
 ```
 project_root/
+├── main.py              # Точка входа в корне проекта
 ├── data/
 │   └── products.json   # Файл с данными о транзакциях
 ├── src/
-│   ├── __init__.py       
-│   ├── utils.py          # Функции для работы с JSON
-│   ├── main.py           # Модуль содержащий классы Product и Category
+│   ├── __init__.py      # Импортируются все основные классы из соответствующих модулей
+│   ├── product.py       # классы продуктов
+│   ├── category.py      # классы категорий и заказов
+│   └── exceptions.py    # классы исключений
 ├── tests/
 │   ├── __init__.py       
 │   ├── test_utils.py     # Тесты для проверки работы с JSON
-│   ├── test_main.py      # Тесты для проверки классов Product и Category
+│   ├── test_exceptions.py# Тесты для проверки класса ProductQuantityException
+│   ├── test_category.py  # Тесты для проверки класса Category
+│   ├── test_product.py   # Тесты для проверки класса Product
 │   └── conftest.py       # Фикстуры для тестов
 └── .env.example          # Файл с API-ключом
 

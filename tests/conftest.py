@@ -2,7 +2,8 @@ import json
 
 import pytest
 
-from src.main import Category, LawnGrass, Order, Product, Smartphone
+from src.category import Category, Order
+from src.product import LawnGrass, Product, Smartphone
 
 
 @pytest.fixture
