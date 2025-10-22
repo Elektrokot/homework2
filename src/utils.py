@@ -1,7 +1,8 @@
 import json
 import os
 
-from src.main import Category, Product
+from src.category import Category
+from src.product import Product
 
 
 def read_json(path: str) -> list:
